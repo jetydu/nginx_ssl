@@ -1,0 +1,17 @@
+# .NET
+bin/
+obj/
+publish/
+
+# Node
+node_modules/
+web/dist/
+
+# Runtime data & secrets
+src/NginxSslManager.Api/data/
+src/NginxSslManager.Api/wwwroot/
+
+# Editor / OS
+.vs/
+.idea/
+.DS_Store

@@ -1,0 +1,53 @@
+# Nginx SSL Manager 控制台反向代理示例
+#
+# 使用方式：
+#   1. 将本文件复制到 /etc/nginx/conf.d/ 并替换域名
+#   2. 先使用 HTTP 段（80）访问控制台，申请到证书后再启用 HTTPS 段
+#   3. nginx -t && nginx -s reload
+
+# ---- HTTP（首次申请证书前使用） ----
+server {
+    listen 80;
+    server_name ssl.example.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:5188;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 180s;
+        proxy_send_timeout 180s;
+    }
+}
+
+# ---- HTTPS（证书签发后启用） ----
+# server {
+#     listen 443 ssl http2;
+#     server_name ssl.example.com;
+#
+#     ssl_certificate     /etc/nginx/ssl/letsencrypt/ssl.example.com/fullchain.pem;
+#     ssl_certificate_key /etc/nginx/ssl/letsencrypt/ssl.example.com/privkey.pem;
+#     ssl_protocols TLSv1.2 TLSv1.3;
+#     ssl_session_cache shared:SSL:10m;
+#
+#     # 限制控制台访问来源（按需修改）
+#     # allow 203.0.113.0/24;
+#     # deny all;
+#
+#     location / {
+#         proxy_pass http://127.0.0.1:5188;
+#         proxy_http_version 1.1;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_read_timeout 180s;
+#         proxy_send_timeout 180s;
+#     }
+# }

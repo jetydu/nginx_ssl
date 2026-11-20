@@ -1,0 +1,29 @@
+[Unit]
+Description=Nginx SSL Manager (.NET 10 + Vue 3)
+Documentation=file:///opt/nginx-ssl-manager/README.md
+After=network-online.target nginx.service
+Wants=network-online.target nginx.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/nginx-ssl-manager
+# --urls 优先级高于 appsettings.json 的 Urls
+ExecStart=/usr/bin/dotnet /opt/nginx-ssl-manager/NginxSslManager.Api.dll --urls http://0.0.0.0:5188
+
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=Storage__DataDirectory=/var/lib/nginx-ssl-manager
+
+# 需要写入 /etc/nginx、证书目录并执行 nginx -t / nginx -s reload
+User=root
+Group=root
+
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+# 基础加固（保持对 /etc/nginx 的写权限，因此不启用 ProtectSystem=strict）
+NoNewPrivileges=false
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
